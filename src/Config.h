@@ -1,6 +1,15 @@
 #ifndef _CONFIG_
 #define _CONFIG_
 
+#include <iostream>
+#include <chrono>
+#include <mutex>
+#include <string>
+#include <iostream>
+#include "anyoption.h"
+
+using namespace std;
+
 #define MAX_MAX_BATCH_LEN 2000
 #define MIN_MAX_BATCH_LEN 16
 #define D_MAX_BATCH_LEN 512
@@ -14,11 +23,6 @@
 #define D_MIN_QUALITY 20
 
 #define D_THREADS 1
-
-#include <iostream>
-#include "anyoption.h"
-
-using namespace std;
 
 class Config{
 public:
@@ -39,6 +43,12 @@ public:
 
     bool paired;
     bool output_singles;
+
+    static chrono::milliseconds wait_time;
+    static mutex log_mutex;
+    static void log(const char* msg);
+    static void log(string msg);
+
 private:
     static Config* getInstance();
     static Config* _instance;

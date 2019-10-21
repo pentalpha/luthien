@@ -1,6 +1,19 @@
 #include "Config.h"
 
 Config* Config::_instance = 0;
+chrono::milliseconds Config::wait_time = chrono::milliseconds(500);
+
+mutex Config::log_mutex;
+
+void Config::log(const char* msg){
+    lock_guard<mutex> guard(log_mutex);
+    cout << msg << endl;
+}
+
+void Config::log(string msg){
+    lock_guard<mutex> guard(log_mutex);
+    cout << msg << endl;
+}
 
 Config* Config::get(){
     if(_instance){
@@ -13,22 +26,6 @@ Config* Config::get(){
 
 Config* Config::getInstance(){
     return new Config();
-}
-
-Config::Config(){
-    max_batch_len = D_MAX_BATCH_LEN;
-    chunk_size = D_CHUNK_SIZE;
-    min_quality = D_MIN_QUALITY;
-    threads = D_THREADS;
-
-    input_file_1 = NULL;
-    input_file_2 = NULL;
-    output_file_1 = NULL;
-    output_file_2 = NULL;
-    output_file_single = NULL;
-
-    paired = false;
-    output_singles = false;
 }
 
 void Config::pass_values(AnyOption* opt){
@@ -77,3 +74,20 @@ void Config::pass_values(AnyOption* opt){
     cout << _instance->max_batch_len << endl;
     cout << _instance->min_quality << endl;
 }
+
+Config::Config(){
+    max_batch_len = D_MAX_BATCH_LEN;
+    chunk_size = D_CHUNK_SIZE;
+    min_quality = D_MIN_QUALITY;
+    threads = D_THREADS;
+
+    input_file_1 = NULL;
+    input_file_2 = NULL;
+    output_file_1 = NULL;
+    output_file_2 = NULL;
+    output_file_single = NULL;
+
+    paired = false;
+    output_singles = false;
+}
+

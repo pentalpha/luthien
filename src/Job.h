@@ -8,11 +8,13 @@ using namespace std;
 
 class Job{
 public:
-    bool paired;
+    bool paired = 0;
+    unsigned size = 0;
     vector<char*> lines1;
     vector<char*> lines2;
     vector<string_view> output_lines1;
     vector<string_view> output_lines2;
+    vector<string_view> output_lines_single;
 };
 
 #endif

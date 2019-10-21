@@ -12,6 +12,7 @@ WorkersHub* WorkersHub::get(){
 
 WorkersHub::WorkersHub(int workers){
     work_ended_flag = false;
+    processed = 0;
     std::vector<std::mutex> list(workers);
     mutexes.swap(list);
 
@@ -20,6 +21,10 @@ WorkersHub::WorkersHub(int workers){
         job_queues.push_back(q);
         job_counter.push_back(0);
     }
+}
+
+void WorkersHub::increaseProcessedCount(Job* job){
+    processed += job->size;
 }
 
 //increase the number of jobs a worker has completed
@@ -42,6 +47,17 @@ Job* WorkersHub::getJob(int worker){
     }
 }
 
+Job* WorkersHub::getOutput(){
+    lock_guard<mutex> guard(output_mutex);
+    if(!output_queue.empty()){
+        Job* job = output_queue.front();
+        output_queue.pop();
+        return job;
+    }else{
+        return NULL;
+    }
+}
+
 //passes a job to the hub, where it will be assigned to the worker with less jobs done.
 void WorkersHub::giveJob(Job* job){
     int worker = getNextWorker();
@@ -50,9 +66,14 @@ void WorkersHub::giveJob(Job* job){
     job_counter[worker] += 1;
 }
 
+void WorkersHub::giveOutput(Job* job){
+    lock_guard<mutex> guard(output_mutex);
+    output_queue.push(job);
+}
+
 int WorkersHub::getNextWorker(){
     int smaller = 0;
-    for(int i = 0; i < job_counter.size(); i++){
+    for(unsigned i = 0; i < job_counter.size(); i++){
         if(job_counter[smaller] > job_counter[i]){
             smaller = i;
         }

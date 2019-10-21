@@ -25,8 +25,11 @@ public:
     void increaseJobCount(int worker);
     //requests a Job for a specific worker. Returns null when no jobs are available.
     Job* getJob(int worker);
+    Job* getOutput();
     //passes a job to the hub, where it will be assigned to the worker with less jobs done.
     void giveJob(Job* job);
+    void giveOutput(Job* job);
+    void increaseProcessedCount(Job* job);
 
 private:
     //a separate queue for each worker
@@ -38,6 +41,8 @@ private:
     //one mutex for each worker
     vector<mutex> mutexes;
     mutex output_mutex;
+
+    long unsigned processed;
 
     static WorkersHub* instance;
 
