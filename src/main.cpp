@@ -2,6 +2,7 @@
 #include <string>
 #include <experimental/filesystem>
 #include <thread>
+#include "WorkersHub.h"
 #include "main.h"
 #include "anyoption.h"
 #include "Config.h"
@@ -36,7 +37,7 @@ int main(int argc, char** argv){
 }
 
 void run(AnyOption* opt){
-    
+    WorkersHub::init(Config::get()->threads);
 }
 
 AnyOption* get_args(int argc, char** argv){
