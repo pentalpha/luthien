@@ -7,6 +7,7 @@
 #include "anyoption.h"
 #include "Config.h"
 #include "Output.h"
+#include "Input.h"
 
 using namespace std;
 
@@ -40,7 +41,9 @@ int main(int argc, char** argv){
 void run(AnyOption* opt){
     WorkersHub::init(Config::get()->threads);
 
+    Input input;
     Output output;
+    input.join();
     output.join();
 }
 

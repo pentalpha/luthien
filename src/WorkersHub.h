@@ -30,7 +30,10 @@ public:
     void giveJob(Job* job);
     void giveOutput(Job* job);
     void increaseProcessedCount(Job* job);
-
+    
+    inline long unsigned getProcessed(){
+        return processed;
+    }
 private:
     //a separate queue for each worker
     vector<queue<Job*> > job_queues;

@@ -10,6 +10,7 @@ class Job{
 public:
     bool paired = 0;
     unsigned size = 0;
+    unsigned start_at = 0;
     vector<char*> lines1;
     vector<char*> lines2;
     vector<string_view> output_lines1;
