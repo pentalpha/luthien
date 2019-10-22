@@ -12,7 +12,7 @@ Input::Input(){
     }else{
         infile_2 = NULL;
     }
-
+    previous_size = 0;
     input_thread = thread(&Input::read_data, this);
 }
 
@@ -41,6 +41,32 @@ void Input::read_data(){
     Config::log("Input: Closed input files.");
 }
 
+Job* Input::new_job(){
+    Job* job = WorkersHub::get()->getUsedJob();
+    if(job != NULL){
+        //Config::log("Retrieved used job, resizing it.");
+        job->lines1.resize(0);
+        job->lines2.resize(0);
+        //Config::log("Reseting values");
+        job->paired = paired;
+        job->size = 0;
+        job->out_str_1 = NULL;
+        job->out_str_2 = NULL;
+        job->out_str_single = NULL;
+    }else{
+        //Config::log("Returning new job");
+        job = new Job();
+        if(previous_size != 0){
+            job->lines1.reserve(previous_size);
+            if(paired){
+                job->lines2.reserve(previous_size);
+            }
+        }
+    }
+    //Config::log("Returning job");
+    return job;
+}
+
 void Input::input_function(){
     long unsigned loaded_chars = 0;
     int current_line = 0;
@@ -52,7 +78,7 @@ void Input::input_function(){
             this_thread::sleep_for(Config::wait_time);
         }
 
-        Job* job = new Job();
+        Job* job = new_job();
         job->paired = false;
         job->start_at = current_line;
 
@@ -90,12 +116,14 @@ void Input::input_function(){
             job->lines1.push_back(line_1);
         }while(loaded < max);
 
+        //job->lines1.shrink_to_fit();
+
         int extra_lines = job->lines1.size() % 4;
 
         if(extra_lines > 0 && job->lines1.size() > 0){
             last_remainder = new vector<char*>(extra_lines);
             for(int i = extra_lines-1; i >= 0; i--){
-                char* value = job->lines1.at(job->lines1.size()-1);
+                char* value = job->lines1[job->lines1.size()-1];
                 (*last_remainder)[i] = value;
                 job->lines1.pop_back();
             }
@@ -103,6 +131,7 @@ void Input::input_function(){
 
         job->size = (size_t)(loaded);
         loaded_chars += job->size;
+        previous_size = job->lines1.size();
 
         WorkersHub::get()->giveJob(job);
         //Config::log("Pushed job to WorkersHub");
@@ -129,7 +158,7 @@ void Input::input_function_paired(){
             this_thread::sleep_for(Config::wait_time);
         }
 
-        Job* job = new Job();
+        Job* job = new_job();
         job->paired = true;
         job->start_at = current_line;
 
@@ -191,8 +220,12 @@ void Input::input_function_paired(){
             line_2[len2] = '\0';
 
             job->lines1.push_back(line_1);
+
             job->lines2.push_back(line_2);
         }while(loaded < max);
+
+        //job->lines1.shrink_to_fit();
+        //job->lines2.shrink_to_fit();
 
         int extra_lines = job->lines1.size() % 4;
 
@@ -201,11 +234,11 @@ void Input::input_function_paired(){
             last_remainder2 = new vector<char*>(extra_lines);
 
             for(int i = extra_lines-1; i >= 0; i--){
-                char* value = job->lines1.at(job->lines1.size()-1);
+                char* value = job->lines1[job->lines1.size()-1];
                 (*last_remainder)[i] = value;
                 job->lines1.pop_back();
 
-                char* value2 = job->lines2.at(job->lines2.size()-1);
+                char* value2 = job->lines2[job->lines2.size()-1];
                 (*last_remainder2)[i] = value2;
                 job->lines2.pop_back();
             }
@@ -213,8 +246,9 @@ void Input::input_function_paired(){
 
         job->size = (size_t)(loaded);
         loaded_chars += job->size;
-        assert(job->lines1.size() == job->lines2.size());
-        assert(job->lines1.size() % 4 == 0);
+        previous_size = job->lines1.size();
+        //assert(job->lines1.size() == job->lines2.size());
+        //assert(job->lines1.size() % 4 == 0);
         WorkersHub::get()->giveJob(job);
         //Config::log("Input: Pushed job to WorkersHub");
 

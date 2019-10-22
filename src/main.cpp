@@ -78,7 +78,7 @@ AnyOption* get_args(int argc, char** argv){
     opt->addUsage("-o2\tThe second fastq output file, required only for paired end mode.");
     opt->addUsage("\noptional:");
     opt->addUsage("-s\tOutput single reads.");
-    opt->addUsage("-t\tNumber of worker threads. Maximum: Number of processors-2.");
+    opt->addUsage("-t\tNumber of worker threads. Maximum: Total number of cores.");
     opt->addUsage(string("\t\tDefault:") + to_string(Config::get()->threads));
     opt->addUsage("-c\tLuthien reads the input files in chunks with this maximum length.");
     opt->addUsage(string("\t\tDefault:") + to_string(Config::get()->chunk_size) + string("MB"));
@@ -189,12 +189,12 @@ string test_invalid_arguments(AnyOption* opt){
     }
 
     //parse optional arguments
-    string threads_test = test_int("t", opt, 1, thread::hardware_concurrency()-2);
+    string threads_test = test_int("t", opt, 1, thread::hardware_concurrency());
     if(threads_test.length()){ return threads_test; }
 
     string chunk_test = test_int("c", opt, MIN_CHUNK_SIZE, MAX_CHUNK_SIZE);
     if(chunk_test.length()){ return chunk_test; }
-    
+
     string batch_test = test_int("b", opt, MIN_MAX_BATCH_LEN, MAX_MAX_BATCH_LEN);
     if(batch_test.length()){ return batch_test; }
 

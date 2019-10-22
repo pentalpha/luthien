@@ -16,8 +16,6 @@ Output::Output(){
         this->outfile_single.open(Config::get()->output_file_single, std::ofstream::out | std::ofstream::trunc);
     }
 
-    assert(outfile_1.is_open());
-
     this->output_thread = thread(&Output::output_function, this);
 }
 
@@ -72,7 +70,12 @@ void Output::printFromQueue(Job* job){
         }
     }*/
     WorkersHub::get()->increaseProcessedCount(job);
-    delete(job);
+    if(WorkersHub::get()->reading_ended_flag){
+        delete(job);
+    }else{
+        WorkersHub::get()->recycle(job);
+    }
+    
     //Config::log("Finished writing job");
     //Config::log(to_string(chars_saved));
 }

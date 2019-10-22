@@ -1,7 +1,8 @@
 #include "Config.h"
+#include <thread>
 
 Config* Config::_instance = 0;
-chrono::milliseconds Config::wait_time = chrono::milliseconds(10);
+chrono::milliseconds Config::wait_time = chrono::milliseconds(5);
 
 mutex Config::log_mutex;
 
@@ -34,6 +35,7 @@ Config* Config::getInstance(){
 }
 
 void Config::pass_values(AnyOption* opt){
+    int threads_number = std::thread::hardware_concurrency();
     _instance->input_file_1 = opt->getValue("i1");
     _instance->output_file_1 = opt->getValue("o1");
 
@@ -49,17 +51,24 @@ void Config::pass_values(AnyOption* opt){
     }
 
     if(opt->getValue("t")){
-        _instance->threads = stoi(opt->getValue("t"));
+        threads_number = stoi(opt->getValue("t"));
     }
+
+    if(threads_number < 3){
+        Config::log("Using 3 threads, the minimum value.");
+        threads_number = 3;
+    }
+    _instance->threads = threads_number - 2;
 
     if(opt->getValue("c")){
         _instance->chunk_size = stoi(opt->getValue("c"));
     }
 
     _instance->max_batch_len = _instance->chunk_size * _instance->threads * BATCH_LEN_MULTIPLIER;
-
+    _instance->max_chunks = _instance->threads * BATCH_LEN_MULTIPLIER;
     if(opt->getValue("nc")){
         _instance->max_batch_len = _instance->chunk_size * _instance->threads * stoi(opt->getValue("nc"));
+        _instance->max_chunks = _instance->threads * stoi(opt->getValue("nc"));
     }
 
     if(opt->getValue("b")){
@@ -96,6 +105,7 @@ Config::Config(){
         max_batch_len = D_MAX_BATCH_LEN;
     }
     length_threshold = D_MIN_LENGTH;
+    max_chunks = threads * BATCH_LEN_MULTIPLIER;
 
     input_file_1 = NULL;
     input_file_2 = NULL;

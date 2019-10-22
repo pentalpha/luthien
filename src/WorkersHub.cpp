@@ -22,6 +22,7 @@ WorkersHub::WorkersHub(int workers){
         job_queues.push_back(q);
         job_counter.push_back(0);
     }
+    next_queue = 0;
 }
 
 void WorkersHub::increaseProcessedCount(Job* job){
@@ -61,7 +62,7 @@ Job* WorkersHub::getOutput(){
 
 //passes a job to the hub, where it will be assigned to the worker with less jobs done.
 void WorkersHub::giveJob(Job* job){
-    int worker = getNextWorker();
+    size_t worker = getNextWorker();
     lock_guard<mutex> guard(mutexes[worker]);
     job_queues[worker].push(job);
     job_counter[worker] += 1;
@@ -81,12 +82,24 @@ bool WorkersHub::allQueuesEmpty(){
     return true;
 }
 
-int WorkersHub::getNextWorker(){
-    int smaller = 0;
-    for(unsigned i = 0; i < job_counter.size(); i++){
-        if(job_counter[smaller] > job_counter[i]){
-            smaller = i;
-        }
+size_t WorkersHub::getNextWorker(){
+    size_t id = next_queue;
+    next_queue = (next_queue+1) % job_queues.size();
+    return id;
+}
+
+void WorkersHub::recycle(Job* job){
+    lock_guard<mutex> guard(recycle_mutex);
+    recycle_queue.push(job);
+}
+
+Job* WorkersHub::getUsedJob(){
+    if(recycle_queue.empty()){
+        return NULL;
+    }else{
+        lock_guard<mutex> guard(recycle_mutex);
+        Job* job = recycle_queue.front();
+        recycle_queue.pop();
+        return job;
     }
-    return smaller;
 }

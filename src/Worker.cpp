@@ -52,9 +52,9 @@ const char* to_cstr(std::string && s)
 
 void Worker::process_job(){
     bool paired = job->paired;
-    assert(job != NULL);
+    //assert(job != NULL);
     if(paired){
-        assert(job->lines1.size() == job->lines2.size());
+        //assert(job->lines1.size() == job->lines2.size());
     }
     size_t start_line = 0;
 
@@ -76,23 +76,23 @@ void Worker::process_job(){
     do{
         //Config::log("Worker: Parsing reads");
         read1_passed = true;
-        header1    = c_str_to_view(job->lines1.at(start_line+0));
-        sequence1  = c_str_to_view(job->lines1.at(start_line+1));
-        comment1   = c_str_to_view(job->lines1.at(start_line+2));
-        qualities1 = c_str_to_view(job->lines1.at(start_line+3));
-        if(!validate_read(header1, sequence1, comment1, qualities1)){
+        header1    = c_str_to_view(job->lines1[start_line+0]);
+        sequence1  = c_str_to_view(job->lines1[start_line+1]);
+        comment1   = c_str_to_view(job->lines1[start_line+2]);
+        qualities1 = c_str_to_view(job->lines1[start_line+3]);
+        /*if(!validate_read(header1, sequence1, comment1, qualities1)){
             exit(EXIT_FAILURE);
-        }
+        }*/
 
         if(paired){
             read2_passed = true;
-            header2    = c_str_to_view(job->lines2.at(start_line+0));
-            sequence2  = c_str_to_view(job->lines2.at(start_line+1));
-            comment2   = c_str_to_view(job->lines2.at(start_line+2));
-            qualities2 = c_str_to_view(job->lines2.at(start_line+3));
-            if(!validate_read(header2, sequence2, comment2, qualities2)){
+            header2    = c_str_to_view(job->lines2[start_line+0]);
+            sequence2  = c_str_to_view(job->lines2[start_line+1]);
+            comment2   = c_str_to_view(job->lines2[start_line+2]);
+            qualities2 = c_str_to_view(job->lines2[start_line+3]);
+            /*if(!validate_read(header2, sequence2, comment2, qualities2)){
                 exit(EXIT_FAILURE);
-            }
+            }*/
         }
 
         //Config::log("Input: Running sliding window");
@@ -184,7 +184,7 @@ void Worker::process_job(){
 
 string_view Worker::c_str_to_view(char* line){
     string_view view{line};
-    if(view.at(view.length()-1) == '\n'){
+    if(view[view.length()-1] == '\n'){
         view.remove_suffix(1);
     }
     return view;

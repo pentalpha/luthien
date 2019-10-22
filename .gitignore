@@ -2,4 +2,7 @@ obj/*
 .vscode/*
 test/big/*
 test/output/*
+test/fastp*
 luthien
+*.html
+*.json

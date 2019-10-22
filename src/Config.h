@@ -17,14 +17,14 @@ using namespace std;
 #define D_MAX_BATCH_LEN 512
 
 #define MIN_CHUNK_SIZE 1
-#define MAX_CHUNK_SIZE 16
-#define D_CHUNK_SIZE 16
+#define MAX_CHUNK_SIZE 32
+#define D_CHUNK_SIZE 12
 
 #define MIN_MIN_QUALITY 1
 #define MAX_MIN_QUALITY 100
 #define D_MIN_QUALITY 20
 
-#define D_THREADS 1
+#define D_THREADS 3
 
 #define D_MIN_LENGTH 20
 
@@ -41,6 +41,7 @@ public:
 
     int max_batch_len;
     int chunk_size;
+    int max_chunks;
     int length_threshold;
 
     int min_quality;
