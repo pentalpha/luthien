@@ -4,6 +4,7 @@
 #include <thread>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "Config.h"
 #include "WorkersHub.h"
 

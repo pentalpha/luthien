@@ -12,6 +12,7 @@ WorkersHub* WorkersHub::get(){
 
 WorkersHub::WorkersHub(int workers){
     work_ended_flag = false;
+    reading_ended_flag = false;
     processed = 0;
     std::vector<std::mutex> list(workers);
     mutexes.swap(list);
@@ -69,6 +70,15 @@ void WorkersHub::giveJob(Job* job){
 void WorkersHub::giveOutput(Job* job){
     lock_guard<mutex> guard(output_mutex);
     output_queue.push(job);
+}
+
+bool WorkersHub::allQueuesEmpty(){
+    for(unsigned i = 0; i < job_queues.size(); i++){
+        if(!job_queues[i].empty()){
+            return false;
+        }
+    }
+    return true;
 }
 
 int WorkersHub::getNextWorker(){

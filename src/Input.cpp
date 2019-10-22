@@ -48,7 +48,7 @@ void Input::input_function(){
     bool eof = false;
     while (!eof) {
         while((loaded_chars-WorkersHub::get()->getProcessed()) >= max_batch_size){
-            Config::log("Input: Loaded too much, waiting for more data to be processed.");
+            //Config::log("Input: Loaded too much, waiting for more data to be processed.");
             this_thread::sleep_for(Config::wait_time);
         }
 
@@ -57,6 +57,7 @@ void Input::input_function(){
         job->start_at = current_line;
 
         char* line = NULL;
+        char *line_1;
         size_t len = chunk_size;
         long loaded = 0;
         long max = (int) chunk_size;
@@ -82,7 +83,11 @@ void Input::input_function(){
             }
             loaded += len1;
             current_line += 1;
-            job->lines1.push_back(line);
+            line_1 = new char[len1+1];
+            strncpy(line_1, line, len1);
+            line_1[len1] = '\0';
+
+            job->lines1.push_back(line_1);
         }while(loaded < max);
 
         int extra_lines = job->lines1.size() % 4;
@@ -106,7 +111,7 @@ void Input::input_function(){
             Config::log("Input: found end of file.");
             break;
         }
-        Config::log(to_string((int)max_batch_size-((int)loaded_chars-(int)WorkersHub::get()->getProcessed())));
+        //Config::log(to_string((int)max_batch_size-((int)loaded_chars-(int)WorkersHub::get()->getProcessed())));
         //Config::log(to_string(loaded_chars));
         //Config::log(to_string(current_line));
     }
@@ -120,7 +125,7 @@ void Input::input_function_paired(){
     bool eof = false;
     while (!eof) {
         while((loaded_chars-WorkersHub::get()->getProcessed()) >= max_batch_size){
-            Config::log("Input: Loaded too much, waiting for more data to be processed.");
+            //Config::log("Input: Loaded too much, waiting for more data to be processed.");
             this_thread::sleep_for(Config::wait_time);
         }
 
@@ -130,6 +135,7 @@ void Input::input_function_paired(){
 
         char* line = NULL;
         char* line2 = NULL;
+        char *line_1, *line_2;
         size_t len = chunk_size;
         long loaded = 0;
         long max = (int) chunk_size;
@@ -158,6 +164,7 @@ void Input::input_function_paired(){
         }
 
         do{
+
             len1 = getline(&line, &len, infile_1);
             len2 = getline(&line2, &len, infile_2);
             if(len1 < 0 || len2 < 0){
@@ -174,8 +181,17 @@ void Input::input_function_paired(){
             loaded += len1;
             loaded += len2;
             current_line += 1;
-            job->lines1.push_back(line);
-            job->lines1.push_back(line2);
+
+            line_1 = new char[len1+1];
+            strncpy(line_1, line, len1);
+            line_1[len1] = '\0';
+
+            line_2 = new char[len2+1];
+            strncpy(line_2, line2, len2);
+            line_2[len2] = '\0';
+
+            job->lines1.push_back(line_1);
+            job->lines2.push_back(line_2);
         }while(loaded < max);
 
         int extra_lines = job->lines1.size() % 4;
@@ -197,15 +213,16 @@ void Input::input_function_paired(){
 
         job->size = (size_t)(loaded);
         loaded_chars += job->size;
-
+        assert(job->lines1.size() == job->lines2.size());
+        assert(job->lines1.size() % 4 == 0);
         WorkersHub::get()->giveJob(job);
-        //Config::log("Pushed job to WorkersHub");
+        //Config::log("Input: Pushed job to WorkersHub");
 
         if(len1 == -1){
             Config::log("Input: found end of file.");
             break;
         }
-        Config::log(to_string((int)max_batch_size-((int)loaded_chars-(int)WorkersHub::get()->getProcessed())));
+        //Config::log(to_string((int)max_batch_size-((int)loaded_chars-(int)WorkersHub::get()->getProcessed())));
         //Config::log(to_string(loaded_chars));
         //Config::log(to_string(current_line));
     }

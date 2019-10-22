@@ -15,7 +15,7 @@
 
 class WorkersHub{
 public:
-    bool work_ended_flag;
+    bool work_ended_flag, reading_ended_flag;
 
     static void init(int workers);
     static WorkersHub* get();
@@ -30,6 +30,7 @@ public:
     void giveJob(Job* job);
     void giveOutput(Job* job);
     void increaseProcessedCount(Job* job);
+    bool allQueuesEmpty();
     
     inline long unsigned getProcessed(){
         return processed;

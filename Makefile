@@ -27,6 +27,24 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 clean:
 	rm $(PROJECT) $(OBJDIR) -Rf
 
+test_single1:
+	./luthien -i1 test/test.fastq -o1 test/output/test.fastq \
+	-t 2 -c 16 -b 256
+
+test_single2:
+	./luthien -i1 test/big/SRR941557.fastq -o1 test/output/test2.fastq \
+	-t 2 -c 16 -b 256
+
+test_paired1:
+	./luthien -i1 test/test.f.fastq -i2 test/test.r.fastq \
+	-o1 test/test.f.fastq -o2 test/output/test.r.fastq \
+	-t 2 -c 17 -b 512
+
+test_paired2:
+	./luthien -i1 test/big/SRR3309317_1.mini.fastq -i2 test/big/SRR3309317_2.mini.fastq \
+	-o1 test/output/SRR3309317_1.mini.fastq -o2 test/output/SRR3309317_2.mini.fastq \
+	-t 2 -c 17 -b 512
+
 buildrepo:
 	@$(call make-repo)
 

@@ -8,6 +8,7 @@
 #include "Config.h"
 #include "Output.h"
 #include "Input.h"
+#include "Worker.h"
 
 using namespace std;
 
@@ -39,11 +40,27 @@ int main(int argc, char** argv){
 }
 
 void run(AnyOption* opt){
-    WorkersHub::init(Config::get()->threads);
+    int threads = Config::get()->threads;
+    WorkersHub::init(threads);
 
     Input input;
+    vector<Worker*> comrades;
+    for(int i = 0; i < threads; i++){
+        comrades.push_back(new Worker(i));
+    }
     Output output;
+
     input.join();
+    WorkersHub::get()->reading_ended_flag = true;
+    Config::log("Finished reading inputs.");
+
+    for(int i = 0; i < threads; i++){
+        comrades[i]->join();
+    }
+
+    WorkersHub::get()->work_ended_flag = true;
+    Config::log("Finished processing inputs.");
+
     output.join();
 }
 
@@ -67,6 +84,7 @@ AnyOption* get_args(int argc, char** argv){
     opt->addUsage(string("\t\tDefault:") + to_string(Config::get()->chunk_size) + string("MB"));
     opt->addUsage("-b\tMaximum chars from fastq to store in memory.");
     opt->addUsage(string("\t\tDefault:") + to_string(Config::get()->max_batch_len) + string("MB"));
+    opt->addUsage("-nc\tThe number of chunks to load for each thread.");
     opt->addUsage("-q\tMinimum quality score.");
     opt->addUsage(string("\t\tDefault:") + to_string(Config::get()->min_quality));
     opt->addUsage("-h --help\tPrint this help.");
@@ -79,6 +97,7 @@ AnyOption* get_args(int argc, char** argv){
     opt->setOption("c");
     opt->setOption("b");
     opt->setOption("q");
+    opt->setOption("nc");
     opt->setOption("help");
 
     opt->processCommandArgs(argc, argv);
@@ -195,6 +214,8 @@ string test_invalid_arguments(AnyOption* opt){
 
     string quality_test = test_int("q", opt, MIN_MIN_QUALITY, MAX_MIN_QUALITY);
     if(quality_test.length()){ return quality_test; }
+    string queue_len = test_int("nc", opt, 2, 10);
+    if(queue_len.length()){ return queue_len; }
 
     return "";
 }

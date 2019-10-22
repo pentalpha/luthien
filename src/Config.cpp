@@ -1,7 +1,7 @@
 #include "Config.h"
 
 Config* Config::_instance = 0;
-chrono::milliseconds Config::wait_time = chrono::milliseconds(500);
+chrono::milliseconds Config::wait_time = chrono::milliseconds(10);
 
 mutex Config::log_mutex;
 
@@ -11,6 +11,11 @@ void Config::log(const char* msg){
 }
 
 void Config::log(string msg){
+    lock_guard<mutex> guard(log_mutex);
+    cout << msg << endl;
+}
+
+void Config::log(string_view msg){
     lock_guard<mutex> guard(log_mutex);
     cout << msg << endl;
 }
@@ -51,6 +56,12 @@ void Config::pass_values(AnyOption* opt){
         _instance->chunk_size = stoi(opt->getValue("c"));
     }
 
+    _instance->max_batch_len = _instance->chunk_size * _instance->threads * BATCH_LEN_MULTIPLIER;
+
+    if(opt->getValue("nc")){
+        _instance->max_batch_len = _instance->chunk_size * _instance->threads * stoi(opt->getValue("nc"));
+    }
+
     if(opt->getValue("b")){
         _instance->max_batch_len = stoi(opt->getValue("b"));
     }
@@ -76,10 +87,15 @@ void Config::pass_values(AnyOption* opt){
 }
 
 Config::Config(){
-    max_batch_len = D_MAX_BATCH_LEN;
+    //max_batch_len = D_MAX_BATCH_LEN;
     chunk_size = D_CHUNK_SIZE;
     min_quality = D_MIN_QUALITY;
     threads = D_THREADS;
+    max_batch_len = chunk_size * threads * BATCH_LEN_MULTIPLIER;
+    if(max_batch_len > D_MAX_BATCH_LEN){
+        max_batch_len = D_MAX_BATCH_LEN;
+    }
+    length_threshold = D_MIN_LENGTH;
 
     input_file_1 = NULL;
     input_file_2 = NULL;
