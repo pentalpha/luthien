@@ -1,6 +1,6 @@
 # Compiler
 CC = g++
-OPTS = -c -Wall --std=c++17
+OPTS = -c -Wall --std=c++17 -O3
 
 # Project name
 PROJECT = luthien
