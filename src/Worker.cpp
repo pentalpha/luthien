@@ -14,14 +14,14 @@ Worker::Worker(int id){
 }
 
 void Worker::join(){
-    Config::log("Worker: joining in.");
+    //Config::log("Worker: joining in.");
     if(working_thread.joinable()){
         working_thread.join();
     }
 }
 
 void Worker::work_function(){
-    Config::log("Worker: Starting work.");
+    Config::log(string("Worker ") + to_string(worker_id) + string(": Starting."));
     while(!WorkersHub::get()->reading_ended_flag){
         job = WorkersHub::get()->getJob(worker_id);
         if(job != NULL){
@@ -33,14 +33,14 @@ void Worker::work_function(){
         }
     }
 
-    Config::log("Worker: Reading is done, processing remaining jobs.");
+    //Config::log("Worker: Reading is done, processing remaining jobs.");
     job = WorkersHub::get()->getJob(worker_id);
     while(job != NULL){
         process_job();
         job = WorkersHub::get()->getJob(worker_id);
     }
     finished = true;
-    Config::log("Worker: Finished working.");
+    Config::log(string("Worker ") + to_string(worker_id) + string(": Finished."));
 }
 
 const char* to_cstr(std::string && s)

@@ -4,7 +4,6 @@
 #include <vector>
 #include <queue>
 #include <mutex>
-#include "Semaphore.h"
 #include "Job.h"
 
 /**

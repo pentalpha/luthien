@@ -31,7 +31,6 @@ int main(int argc, char** argv){
         cout << msg << "\n";
     }else{
         Config::pass_values(opt);
-        cout << "Arguments checked" << endl;
         run(opt);
     }
 

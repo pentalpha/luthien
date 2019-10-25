@@ -79,20 +79,20 @@ void Config::pass_values(AnyOption* opt){
         _instance->min_quality = stoi(opt->getValue("q"));
     }
 
-    cout << _instance->input_file_1 << endl;
-    cout << _instance->output_file_1 << endl;
+    cout << "Parameters:" << endl;
+    cout << "\tFirst input file: " << _instance->input_file_1 << endl;
+    cout << "\tFirst output file: "  << _instance->output_file_1 << endl;
     if(_instance->paired) {
-        cout << _instance->input_file_1 << endl;
-        cout << _instance->output_file_2 << endl;
+        cout << "\tSecond input file: "  << _instance->input_file_1 << endl;
+        cout << "\tSecond output file: "  << _instance->output_file_2 << endl;
         if(_instance->output_singles){
-            cout << _instance->output_file_single << endl;
+            cout << "\tSingles output file: "  << _instance->output_file_single << endl;
         }
     }
 
-    cout << _instance->threads << endl;
-    cout << _instance->chunk_size << endl;
-    cout << _instance->max_batch_len << endl;
-    cout << _instance->min_quality << endl;
+    cout << "\tWorker threads: "  << _instance->threads << endl;
+    cout << "\tChunk size: "  << _instance->chunk_size << endl;
+    cout << "\tQualit threshold: "  << _instance->min_quality << endl;
 }
 
 Config::Config(){

@@ -137,7 +137,7 @@ void Input::input_function(){
         //Config::log("Pushed job to WorkersHub");
 
         if(len1 == -1){
-            Config::log("Input: found end of file.");
+            //Config::log("Input: found end of file.");
             break;
         }
         //Config::log(to_string((int)max_batch_size-((int)loaded_chars-(int)WorkersHub::get()->getProcessed())));
@@ -162,10 +162,11 @@ void Input::input_function_paired(){
         job->paired = true;
         job->start_at = current_line;
 
-        char* line = NULL;
-        char* line2 = NULL;
-        char *line_1, *line_2;
+        
         size_t len = chunk_size;
+        char* line = new char[chunk_size];
+        char* line2 = new char[chunk_size];
+        char *line_1, *line_2;
         long loaded = 0;
         long max = (int) chunk_size;
 
@@ -194,14 +195,15 @@ void Input::input_function_paired(){
 
         do{
 
-            len1 = getline(&line, &len, infile_1);
             len2 = getline(&line2, &len, infile_2);
-            if(len1 < 0 || len2 < 0){
+            len1 = getline(&line, &len, infile_1);
+            
+            if(len1 <= 0 || len2 <= 0){
                 eof = true;
-                if(len2 >= 0){
-                    Config::log(string("Input: first input has more lines than the second input,")
-                        + string(" ignoring the remaining lines in the second."));
-                }else if(len1 >= 0){
+                if(len2 > 0 && len1 <= 0){
+                    Config::log(string("Input: first input has less lines than the second input,")
+                        + string(" ignoring the remaining lines in the first."));
+                }else if(len1 > 0 && len2 <= 0){
                     Config::log(string("Input: first input has more lines than the second input,")
                         + string(" ignoring the remaining lines in the second."));
                 }
@@ -218,7 +220,8 @@ void Input::input_function_paired(){
             line_2 = new char[len2+1];
             strncpy(line_2, line2, len2);
             line_2[len2] = '\0';
-
+            //Config::log(string("First:") + string(line_1));
+            //Config::log(string("Second:") + string(line_2));
             job->lines1.push_back(line_1);
 
             job->lines2.push_back(line_2);
@@ -253,7 +256,7 @@ void Input::input_function_paired(){
         //Config::log("Input: Pushed job to WorkersHub");
 
         if(len1 == -1){
-            Config::log("Input: found end of file.");
+            //Config::log("Input: found end of file.");
             break;
         }
         //Config::log(to_string((int)max_batch_size-((int)loaded_chars-(int)WorkersHub::get()->getProcessed())));
