@@ -4,11 +4,13 @@ import numpy as np
 import sys
 
 '''
-usage: python performance.py <luthien_location> <fastp_location>
+usage: python performance.py <luthien_location> <luthien_location2> <n_tests>
 '''
-
-fastp = sys.argv[2]
-sickle = sys.argv[1]
+n_tests = 10
+luthien2 = sys.argv[2]
+luthien1 = sys.argv[1]
+if len(sys.argv) >= 4:
+    n_tests = int(sys.argv[3])
 
 big_single = "big/SRR941557.fastq"
 big_single_out = "output/SRR941557.fastq"
@@ -24,7 +26,6 @@ small_pair_2 = "test.r.fastq"
 small_pair_1_out = "output/test.f.fastq"
 small_pair_2_out = "output/test.r.fastq"
 
-n_tests = 10
 
 def runCommand(cmd):
     #print("\t> " + cmd)
@@ -32,36 +33,36 @@ def runCommand(cmd):
     #process = subprocess.call(cmd, shell=True)
     return process
 
-def run_luthien(threads, chunk_size):
+def run_luthien(threads, chunk_size, luthien):
     #print("Running test for " + str(threads) + " " + str(chunk_size))
-    duration_single = 0.0
-    duration_paired = 0.0
+    durations_single = []
+    durations_paired = []
 
-    code = runCommand(" ".join(["../luthien -i1", big_pair_1, "-o1", big_pair_1_out,
+    code = runCommand(" ".join([luthien, "-i1", big_pair_1, "-o1", big_pair_1_out,
                     "-i2", big_pair_2, "-o2", big_pair_2_out,
                     "-t", str(threads), "-c", str(chunk_size)]))
     for i in range(n_tests):
         start = timer()
-        code = runCommand(" ".join(["../luthien -i1", big_pair_1, "-o1", big_pair_1_out,
+        code = runCommand(" ".join([luthien, "-i1", big_pair_1, "-o1", big_pair_1_out,
                     "-i2", big_pair_2, "-o2", big_pair_2_out,
                     "-t", str(threads), "-c", str(chunk_size)]))
         if(code != 0):
             quit()
         end = timer()
-        duration_paired += (end-start)
+        durations_paired.append(end-start)
     
-    code = runCommand(" ".join(["../luthien -i1", big_single, "-o1", big_single_out, 
+    code = runCommand(" ".join([luthien, "-i1", big_single, "-o1", big_single_out, 
                     "-t", str(threads), "-c", str(chunk_size)]))
     for i in range(n_tests):
         start = timer()
-        code = runCommand(" ".join(["../luthien -i1", big_single, "-o1", big_single_out, 
+        code = runCommand(" ".join([luthien, "-i1", big_single, "-o1", big_single_out, 
                     "-t", str(threads), "-c", str(chunk_size)]))
         end = timer()
         if(code != 0):
             quit()
-        duration_single += (end-start)
+        durations_single.append(end-start)
     
-    return duration_single / n_tests, duration_paired / n_tests
+    return np.array(durations_single), np.array(durations_paired)
 
 def run_fastp(threads):
     duration_single = 0.0
@@ -93,7 +94,7 @@ def run_fastp(threads):
 
     return duration_single / n_tests, duration_paired / n_tests
 
-start_threads = 2
+start_threads = 4
 step_threads = 1
 end_threads = 4
 
@@ -101,10 +102,16 @@ threads_list = np.arange(start_threads, end_threads+step_threads, step_threads)
 #chunks_list = np.arange(start_chunk, end_chunk+step_chunk, step_chunk)
 
 for thread_number in threads_list:
-    fastp_single, fastp_paired = run_fastp(thread_number)
-    print("-t " + str(4) + " -A: " + str(fastp_single) + "s, " + str(fastp_paired) + "s")
-    single_time, paired_time = run_luthien(thread_number, 12)
-    print("-t " + str(thread_number) + ": " + str(single_time) + "s, " + str(paired_time) + "s")
+    #fastp_single, fastp_paired = run_fastp(thread_number)
+    #print("-t " + str(4) + " -A: " + str(fastp_single) + "s, " + str(fastp_paired) + "s")
+    single_time, paired_time = run_luthien(thread_number, 12, luthien2)
+    print(luthien2 + ": -t " + str(thread_number) + ": " 
+        + str(np.mean(single_time))+"+/-"+str(np.std(single_time)) +" single, "
+        + str(np.mean(paired_time))+"+/-"+str(np.std(paired_time)) +" paired.")
+    single_time, paired_time = run_luthien(thread_number, 12, luthien1)
+    print(luthien1 + ": -t " + str(thread_number) + ": " 
+        + str(np.mean(single_time))+"+/-"+str(np.std(single_time)) +" single, "
+        + str(np.mean(paired_time))+"+/-"+str(np.std(paired_time)) +" paired.")
 #    for chunk_size in chunks_list:
 #        
 #        print("-t " + str(thread_number) + " -c " + str(chunk_size) + ": "
