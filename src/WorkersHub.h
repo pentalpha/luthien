@@ -40,16 +40,16 @@ public:
     }
 private:
     //a separate queue for each worker
-    vector<queue<Job*> > job_queues;
+    std::vector<std::queue<Job*> > job_queues;
     //a queue for the output thread;
-    queue<Job*> output_queue;
-    queue<Job*> recycle_queue;
+    std::queue<Job*> output_queue;
+    std::queue<Job*> recycle_queue;
     //keeps track of how many jobs each worker has completed
-    vector<int> job_counter;
+    std::vector<int> job_counter;
     //one mutex for each worker
-    vector<mutex> mutexes;
-    mutex output_mutex;
-    mutex recycle_mutex;
+    std::vector<std::mutex> mutexes;
+    std::mutex output_mutex;
+    std::mutex recycle_mutex;
     size_t next_queue;
 
     long unsigned processed;

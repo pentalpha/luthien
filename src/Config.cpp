@@ -92,7 +92,7 @@ void Config::pass_values(AnyOption* opt){
 
     cout << "\tWorker threads: "  << _instance->threads << endl;
     cout << "\tChunk size: "  << _instance->chunk_size << endl;
-    cout << "\tQualit threshold: "  << _instance->min_quality << endl;
+    cout << "\tQuality threshold: "  << _instance->min_quality << endl;
 }
 
 Config::Config(){

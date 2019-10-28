@@ -37,7 +37,7 @@ test_single2:
 
 test_paired1:
 	./luthien -i1 test/test.f.fastq -i2 test/test.r.fastq \
-	-o1 test/test.f.fastq -o2 test/output/test.r.fastq \
+	-o1 test/output/test.f.fastq -o2 test/output/test.r.fastq \
 	-t 2 -c 17 -b 512
 
 test_paired2:

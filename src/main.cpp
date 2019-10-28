@@ -53,14 +53,24 @@ void run(AnyOption* opt){
     WorkersHub::get()->reading_ended_flag = true;
     Config::log("Finished reading inputs.");
 
+    TrimmResults trim;
     for(int i = 0; i < threads; i++){
         comrades[i]->join();
+        trim.add(comrades[i]->results);
     }
 
     WorkersHub::get()->work_ended_flag = true;
     Config::log("Finished processing inputs.");
-
     output.join();
+
+    cout << endl << "Trimming statistics: " << endl << endl;
+    if(Config::get()->paired){
+        trim.print_paired();
+    }else{
+        trim.print();
+    }
+
+    
 }
 
 AnyOption* get_args(int argc, char** argv){

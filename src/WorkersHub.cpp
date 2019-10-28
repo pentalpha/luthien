@@ -1,5 +1,7 @@
 #include "WorkersHub.h"
 
+using namespace std;
+
 WorkersHub* WorkersHub::instance = 0;
 
 void WorkersHub::init(int workers){

@@ -2,7 +2,7 @@
 #define _WORKER_
 
 #include <thread>
-#include <vector>
+////#include <vector>
 #include <assert.h>
 
 #include "Job.h"
@@ -15,8 +15,20 @@ struct SlidingResult{
 	int three_prime_cut;
 };
 
+struct TrimmResults{
+    TrimmResults();
+    void add(TrimmResults &other);
+    void print();
+    void print_paired();
+
+    long input_records, kept_p, kept_i1, kept_i2;
+    long discard_p, discard_i1, discard_i2;
+};
+
 class Worker{
 public:
+    TrimmResults results;
+
     Worker(int id);
     void join();
 private:

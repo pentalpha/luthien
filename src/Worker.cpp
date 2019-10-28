@@ -1,5 +1,42 @@
 #include "Worker.h"
+#include <iostream>
 #include <sstream>
+
+TrimmResults::TrimmResults(){
+    input_records = 0;
+    kept_i1 = 0;
+    kept_i2 = 0;
+    kept_p = 0;
+    discard_p = 0;
+    discard_i1 = 0;
+    discard_i2 = 0;
+}
+
+void TrimmResults::add(TrimmResults &other){
+    input_records += other.input_records;
+    kept_i1 += other.kept_i1;
+    kept_i2 += other.kept_i2;
+    kept_p += other.kept_p;
+    discard_p += other.discard_p;
+    discard_i1 += other.discard_i1;
+    discard_i2 += other.discard_i2;
+}
+
+void TrimmResults::print(){
+    cout << "Total input FastQ records: " << input_records << "\n";
+    cout << "FastQ records kept: " << kept_i1 << "(" << ((float)discard_i1 / (float)input_records)*100 << "%)\n";
+    cout << "FastQ records discarded: " << discard_i1 << "\n";
+}
+
+void TrimmResults::print_paired(){
+    cout << "Total input FastQ records: " << input_records << "\n";
+    cout << "FastQ records kept: " << kept_p
+        << "(" << ((float)kept_p / (float)input_records)*100 << "%)\n";
+    cout << "Fastq single records kept:\n\tin1: " << kept_i1 <<"\n\tin2: " << kept_i2 << "\n";
+    cout << "FastQ paired records discarded: " << discard_p << "\n";
+    cout << "\tFastQ in1 records discarded: " << discard_i1 << "\n";
+    cout << "\tFastQ in2 records discarded: " << discard_i2 << "\n";
+}
 
 Worker::Worker(int id){
     worker_id = id;
@@ -9,12 +46,11 @@ Worker::Worker(int id){
     qual_threshold = Config::get()->min_quality;
     save_singles = Config::get()->output_singles;
     finished = false;
-
     working_thread = thread(&Worker::work_function, this);
 }
 
 void Worker::join(){
-    //Config::log("Worker: joining in.");
+    Config::log("Worker: joining in.");
     if(working_thread.joinable()){
         working_thread.join();
     }
@@ -70,19 +106,22 @@ void Worker::process_job(){
     out_str1 = new stringstream();
     if(paired){out_str2 = new stringstream();}
     if(save_singles){ out_strS = new stringstream();}
+    results.input_records += (job->lines1.size() / 4);
     /*out_str1 = new string();
     if(paired){out_str2 = new string();}
     if(save_singles){ out_strS = new string();}*/
+    //Config::log(string("Processing log with lines1.size()=")+to_string(job->lines1.size()));
     do{
-        //Config::log("Worker: Parsing reads");
+        //Config::log(string("Worker: Parsing reads from start_line=") + to_string(start_line));
         read1_passed = true;
         header1    = c_str_to_view(job->lines1[start_line+0]);
         sequence1  = c_str_to_view(job->lines1[start_line+1]);
         comment1   = c_str_to_view(job->lines1[start_line+2]);
         qualities1 = c_str_to_view(job->lines1[start_line+3]);
-        /*if(!validate_read(header1, sequence1, comment1, qualities1)){
+        //Config::log("Worker: Parsed read1");
+        if(!validate_read(header1, sequence1, comment1, qualities1)){
             exit(EXIT_FAILURE);
-        }*/
+        }
 
         if(paired){
             read2_passed = true;
@@ -90,9 +129,10 @@ void Worker::process_job(){
             sequence2  = c_str_to_view(job->lines2[start_line+1]);
             comment2   = c_str_to_view(job->lines2[start_line+2]);
             qualities2 = c_str_to_view(job->lines2[start_line+3]);
-            /*if(!validate_read(header2, sequence2, comment2, qualities2)){
+            if(!validate_read(header2, sequence2, comment2, qualities2)){
                 exit(EXIT_FAILURE);
-            }*/
+            }
+            //Config::log("Worker: Parsed read2");
         }
 
         //Config::log("Input: Running sliding window");
@@ -142,25 +182,38 @@ void Worker::process_job(){
                 << sequence1 << "\n"
                 << comment1 << "\n"
                 << qualities1 << "\n";
-
             if(paired){
                 *out_str2 << header2 << "\n"
                     << sequence2 << "\n"
                     << comment2 << "\n"
                     << qualities2 << "\n";
+                results.kept_p += 1;
+            }else{
+                results.kept_i1 += 1;
             }
-        }else if(paired && save_singles){
+        }else if(paired){
+            results.discard_p += 1;
             if(read1_passed){
-                *out_strS << header1 << "\n";
-                *out_strS << sequence1 << "\n";
-                *out_strS << comment1 << "\n";
-                *out_strS << qualities1 << "\n";
+                results.kept_i1 += 1;
+                results.discard_i2 += 1;
+                if(save_singles){
+                    *out_strS << header1 << "\n";
+                    *out_strS << sequence1 << "\n";
+                    *out_strS << comment1 << "\n";
+                    *out_strS << qualities1 << "\n";
+                }
             }else if(read2_passed){
-                *out_strS << header2 << "\n";
-                *out_strS << sequence2 << "\n";
-                *out_strS << comment2 << "\n";
-                *out_strS << qualities2 << "\n";
+                results.kept_i2 += 1;
+                results.discard_i1 += 1;
+                if(save_singles){
+                    *out_strS << header2 << "\n";
+                    *out_strS << sequence2 << "\n";
+                    *out_strS << comment2 << "\n";
+                    *out_strS << qualities2 << "\n";
+                }
             }
+        }else{
+            results.discard_i1 += 1;
         }
         //Config::log("Input: Finished processing pair of reads.");
         start_line += 4;
