@@ -1,5 +1,5 @@
 # luthien
-Parallel windowed adaptive trimming for fastq files using quality score.
+Super ultra-fast fastq preprocessor, using parallel windowed adaptive trimming.
 
 ## Windowed Adaptive Trimming
 This sofware uses [sickle](https://github.com/najoshi/sickle)'s algorithm for fastq trimming, in which a sliding window with 
@@ -9,6 +9,7 @@ adaptive size is used to determine where to cut the original sequence.
 - Single End fastq processing;
 - Paired End fastq processing;
 - Parallel processing and IO through a producer-consumer model;
+- Very low memory usage, can be used on any modern personal computer;
 
 ## Features we want to implement
 - Automatic detection of fastq scoring scheme (sanger, illumina or solexa);
