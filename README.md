@@ -50,6 +50,7 @@ optional:
   -nc	The number of chunks to load for each thread.
   -q	Minimum quality score.
   		Default:20
+  -qt	Quality score type: sanger(default), illumina or solexa.
   -h --help	Print this help.
 ```
 
