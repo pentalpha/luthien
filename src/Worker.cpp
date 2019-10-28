@@ -41,7 +41,7 @@ void TrimmResults::print_paired(){
 Worker::Worker(int id){
     worker_id = id;
     job = NULL;
-    quality_offset = SANGER_START;
+    quality_offset = Config::get()->quality_offset;
     length_threshold = Config::get()->length_threshold;
     qual_threshold = Config::get()->min_quality;
     save_singles = Config::get()->output_singles;

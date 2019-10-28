@@ -69,8 +69,6 @@ void run(AnyOption* opt){
     }else{
         trim.print();
     }
-
-    
 }
 
 AnyOption* get_args(int argc, char** argv){
@@ -96,6 +94,7 @@ AnyOption* get_args(int argc, char** argv){
     opt->addUsage("-nc\tThe number of chunks to load for each thread.");
     opt->addUsage("-q\tMinimum quality score.");
     opt->addUsage(string("\t\tDefault:") + to_string(Config::get()->min_quality));
+    opt->addUsage("-qt\tQuality score type: sanger(default), illumina or solexa.");
     opt->addUsage("-h --help\tPrint this help.");
 
     opt->setOption("i1"); opt->setOption("i2");
@@ -107,6 +106,7 @@ AnyOption* get_args(int argc, char** argv){
     opt->setOption("b");
     opt->setOption("q");
     opt->setOption("nc");
+    opt->setOption("qt");
     opt->setOption("help");
 
     opt->processCommandArgs(argc, argv);

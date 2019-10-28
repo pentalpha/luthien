@@ -79,6 +79,23 @@ void Config::pass_values(AnyOption* opt){
         _instance->min_quality = stoi(opt->getValue("q"));
     }
 
+    string qual_type = "sanger";
+    if(opt->getValue("qt")){
+        qual_type = opt->getValue("qt");
+        if(qual_type != "sanger" && qual_type != "illumina" && qual_type != "solexa"){
+            cout << "Invalid quality score type '" << qual_type << "', using 'sanger' instead." << endl;
+        }
+    }
+
+    if(qual_type == "sanger"){
+        _instance->quality_offset = SANGER_OFFSET;
+    }else if(qual_type == "illumina"){
+        _instance->quality_offset = ILLUMINA_OFFSET;
+    }else if(qual_type == "solexa"){
+        _instance->quality_offset = SOLEXA_OFFSET;
+    }
+
+
     cout << "Parameters:" << endl;
     cout << "\tFirst input file: " << _instance->input_file_1 << endl;
     cout << "\tFirst output file: "  << _instance->output_file_1 << endl;
@@ -93,6 +110,7 @@ void Config::pass_values(AnyOption* opt){
     cout << "\tWorker threads: "  << _instance->threads << endl;
     cout << "\tChunk size: "  << _instance->chunk_size << endl;
     cout << "\tQuality threshold: "  << _instance->min_quality << endl;
+    cout << "\tQuality score type: " << qual_type << endl;
 }
 
 Config::Config(){

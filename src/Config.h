@@ -28,11 +28,15 @@ using namespace std;
 
 #define D_MIN_LENGTH 20
 
-#define SANGER_START 33
-#define SANGER_END 126
+#define SANGER_OFFSET 33
+#define SANGER_MAX 126
 
-#define ILLUMINA_START 64
-#define ILLUMINA_END 110
+#define ILLUMINA_OFFSET 64
+#define ILLUMINA_MAX 110
+
+#define SOLEXA_OFFSET 64
+#define SOLEXA_MIN 58
+#define SOLEXA_MAX 112
 
 class Config{
 public:
@@ -44,7 +48,7 @@ public:
     int max_chunks;
     int length_threshold;
 
-    int min_quality;
+    int min_quality, quality_offset;
     int threads;
 
     char* input_file_1;
